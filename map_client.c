@@ -127,10 +127,10 @@ extern const wiced_bt_cfg_buf_pool_t wiced_bt_cfg_buf_pools[];
  */
 const uint8_t map_client_sdp_db[] =
 {
-    SDP_ATTR_SEQUENCE_1(65),                                                // length is the sum of all records
+    SDP_ATTR_SEQUENCE_1(79),                                                // length is the sum of all records
 
-    // SDP record for Message Notification service ( total length of record: 65 )
-    SDP_ATTR_SEQUENCE_1(63),                                                // 2 bytes
+    // SDP record for Message Notification service ( total length of record: 77 )
+    SDP_ATTR_SEQUENCE_1(77),                                                // 2 bytes
         SDP_ATTR_RECORD_HANDLE(0x10001),                                    // 8 bytes
         SDP_ATTR_CLASS_ID(UUID_SERVCLASS_MESSAGE_NOTIFICATION),             // 8 bytes
         SDP_ATTR_ID(ATTR_ID_PROTOCOL_DESC_LIST), SDP_ATTR_SEQUENCE_1(17),   // 22 bytes
@@ -141,19 +141,13 @@ const uint8_t map_client_sdp_db[] =
                 SDP_ATTR_VALUE_UINT1(WICED_BT_MNS_RFCOMM_SCN),
             SDP_ATTR_SEQUENCE_1(3),
                 SDP_ATTR_UUID16(UUID_PROTOCOL_OBEX),
+        SDP_ATTR_PROFILE_DESC_LIST(UUID_SERVCLASS_MAP_PROFILE, 0x0104),     // 13 bytes
         SDP_ATTR_SERVICE_NAME(7),                                           // 12 bytes
         'M', 'A', 'P', ' ', 'M', 'N', 'S',
-#if (defined(BTA_MAP_1_2_SUPPORTED) && BTA_MAP_1_2_SUPPORTED == TRUE)
-        SDP_ATTR_PROFILE_DESC_LIST(UUID_SERVCLASS_MAP_PROFILE, 0x0102),     // 13 byte
-        SDP_ATTR_ID(ATTR_ID_SUPPORTED_FEATURES_32), SDP_ATTR_SEQUENCE_1(7), // 12 byte
-            SDP_ATTR_SEQUENCE_1(5),
+        SDP_ATTR_ID(ATTR_ID_OBX_OVR_L2CAP_PSM),                             // 6 bytes
+             SDP_ATTR_VALUE_UINT2(WICED_BT_MNS_L2CAP_PSM),
+        SDP_ATTR_ID(ATTR_ID_SUPPORTED_FEATURES_32),                         // 8 bytes
                 SDP_ATTR_VALUE_UINT4(WICED_BT_MA_DEFAULT_SUPPORTED_FEATURES),
-        SDP_ATTR_ID(ATTR_ID_OBX_OVR_L2CAP_PSM), SDP_ATTR_SEQUENCE_1(5),     // 10 byte
-            SDP_ATTR_SEQUENCE_1(3),
-                SDP_ATTR_VALUE_UINT2(WICED_BT_MNS_L2CAP_PSM)
-#else
-        SDP_ATTR_PROFILE_DESC_LIST(UUID_SERVCLASS_MAP_PROFILE, 0x0100),     // 13 byte
-#endif
 };
 
 /* MCE control block */
@@ -401,7 +395,7 @@ void map_client_app_init()
     wiced_bt_sdp_db_init((uint8_t *)map_client_sdp_db, sizeof(map_client_sdp_db));
 
     /* Start MN service */
-    wiced_bt_mce_mn_start(WICED_BT_MCE_SECURITY, "MAP MNS", WICED_BT_MA_DEFAULT_SUPPORTED_FEATURES);
+    wiced_bt_mce_mn_start(WICED_BT_MCE_SECURITY, "MAP MNS", WICED_BT_MNS_RFCOMM_SCN, WICED_BT_MNS_L2CAP_PSM, WICED_BT_MA_DEFAULT_SUPPORTED_FEATURES);
 
     /* Creating a buffer pool for holding the peer devices's key info */
     p_key_info_pool = wiced_bt_create_pool( KEY_INFO_POOL_BUFFER_SIZE, KEY_INFO_POOL_BUFFER_COUNT);
@@ -446,6 +440,8 @@ void map_client_write_eir()
 
 void map_client_event_cback(wiced_bt_mce_evt_t event, wiced_bt_mce_t *p_data)
 {
+    WICED_BT_TRACE("[%s] event %d \n",__FUNCTION__,event);
+
     switch (event)
     {
     case WICED_BT_MCE_ENABLE_EVT:
@@ -668,7 +664,7 @@ void map_client_handle_folder_list_event(wiced_bt_mce_list_data_t * p_list_data)
 
 void map_client_handle_msg_list_event(wiced_bt_mce_list_data_t * p_list_data)
 {
-    WICED_BT_TRACE("map_client_handle_msg_list_event status %d\n", p_list_data->status);
+    WICED_BT_TRACE("map_client_handle_msg_list_event status %d data len %d is_final %d \n", p_list_data->status, p_list_data->len, p_list_data->is_final);
 
     map_client_send_hci_data(HCI_CONTROL_MCE_EVENT_MESSAGE_LIST, p_list_data->status,
             p_list_data->p_data, p_list_data->len, p_list_data->is_final);
@@ -922,6 +918,7 @@ void map_client_handle_list_messages(uint8_t *p_data, uint32_t data_len)
     wiced_bt_ma_sess_handle_t sess_handle;
     tlv_t *p_param;
     uint8_t *p;
+    uint8_t srmp = 0;
     wiced_bt_ma_msg_list_filter_param_t filters;
 
     p_param = wiced_find_tlv(p_data, data_len, HCI_CONTROL_MCE_PARAM_SESS_HANDLE);
@@ -954,7 +951,13 @@ void map_client_handle_list_messages(uint8_t *p_data, uint32_t data_len)
         STREAM_TO_UINT16(filters.list_start_offset, p);
     }
 
-    wiced_bt_mce_get_msg_list(sess_handle, map_client_cb.folder, &filters);
+    p_param = wiced_find_tlv(p_data, data_len, HCI_CONTROL_MCE_PARAM_SRMP_ENABLE);
+    if (p_param)
+    {
+        p = p_param->value;
+        STREAM_TO_UINT8(srmp, p);
+    }
+    wiced_bt_mce_get_msg_list(sess_handle, map_client_cb.folder, &filters, srmp);
 }
 
 void map_client_handle_get_message(uint8_t *p_data, uint32_t data_len)

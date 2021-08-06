@@ -34,6 +34,7 @@
 #include "wiced_memory.h"
 #include "wiced_platform.h"
 #include "wiced_bt_dev.h"
+#include "wiced_bt_ble.h"
 #include "wiced_bt_trace.h"
 #include "string.h"
 #include "wiced_transport.h"
