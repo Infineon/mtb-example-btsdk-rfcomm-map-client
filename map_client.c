@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2021, Cypress Semiconductor Corporation (an Infineon company) or
+ * Copyright 2016-2022, Cypress Semiconductor Corporation (an Infineon company) or
  * an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
  *
  * This software, including source code, documentation and related
@@ -127,10 +127,17 @@ extern const wiced_bt_cfg_buf_pool_t wiced_bt_cfg_buf_pools[];
  */
 const uint8_t map_client_sdp_db[] =
 {
+#if (defined(BTA_MAP_1_2_SUPPORTED) && BTA_MAP_1_2_SUPPORTED == TRUE)
     SDP_ATTR_SEQUENCE_1(79),                                                // length is the sum of all records
 
     // SDP record for Message Notification service ( total length of record: 77 )
     SDP_ATTR_SEQUENCE_1(77),                                                // 2 bytes
+#else
+    SDP_ATTR_SEQUENCE_1(65),                                                // length is the sum of all records
+
+    // SDP record for Message Notification service ( total length of record: 65 )
+    SDP_ATTR_SEQUENCE_1(63),                                                // 2 bytes
+#endif
         SDP_ATTR_RECORD_HANDLE(0x10001),                                    // 8 bytes
         SDP_ATTR_CLASS_ID(UUID_SERVCLASS_MESSAGE_NOTIFICATION),             // 8 bytes
         SDP_ATTR_ID(ATTR_ID_PROTOCOL_DESC_LIST), SDP_ATTR_SEQUENCE_1(17),   // 22 bytes
@@ -141,13 +148,20 @@ const uint8_t map_client_sdp_db[] =
                 SDP_ATTR_VALUE_UINT1(WICED_BT_MNS_RFCOMM_SCN),
             SDP_ATTR_SEQUENCE_1(3),
                 SDP_ATTR_UUID16(UUID_PROTOCOL_OBEX),
+#if (defined(BTA_MAP_1_2_SUPPORTED) && BTA_MAP_1_2_SUPPORTED == TRUE)
         SDP_ATTR_PROFILE_DESC_LIST(UUID_SERVCLASS_MAP_PROFILE, 0x0104),     // 13 bytes
+#else
+		SDP_ATTR_PROFILE_DESC_LIST(UUID_SERVCLASS_MAP_PROFILE, 0x0100),     // 13 bytes
+#endif
         SDP_ATTR_SERVICE_NAME(7),                                           // 12 bytes
         'M', 'A', 'P', ' ', 'M', 'N', 'S',
-        SDP_ATTR_ID(ATTR_ID_OBX_OVR_L2CAP_PSM),                             // 6 bytes
-             SDP_ATTR_VALUE_UINT2(WICED_BT_MNS_L2CAP_PSM),
-        SDP_ATTR_ID(ATTR_ID_SUPPORTED_FEATURES_32),                         // 8 bytes
-                SDP_ATTR_VALUE_UINT4(WICED_BT_MA_DEFAULT_SUPPORTED_FEATURES),
+#if (defined(BTA_MAP_1_2_SUPPORTED) && BTA_MAP_1_2_SUPPORTED == TRUE)
+        SDP_ATTR_ID(ATTR_ID_OBX_OVR_L2CAP_PSM),      // 6 byte
+            SDP_ATTR_VALUE_UINT2(WICED_BT_MNS_L2CAP_PSM),
+        SDP_ATTR_ID(ATTR_ID_SUPPORTED_FEATURES_32), // 8 byte
+            SDP_ATTR_VALUE_UINT4(WICED_BT_MA_DEFAULT_SUPPORTED_FEATURES),
+
+#endif
 };
 
 /* MCE control block */

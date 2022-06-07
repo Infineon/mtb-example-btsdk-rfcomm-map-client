@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2021, Cypress Semiconductor Corporation (an Infineon company) or
+ * Copyright 2016-2022, Cypress Semiconductor Corporation (an Infineon company) or
  * an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
  *
  * This software, including source code, documentation and related
@@ -205,7 +205,7 @@ const wiced_bt_cfg_buf_pool_t wiced_bt_cfg_buf_pools[WICED_BT_CFG_NUM_BUF_POOLS]
     { 64,       16  },      /* Small Buffer Pool */
     { 360,      8   },      /* Medium Buffer Pool (used for HCI & RFCOMM control messages, min recommended size is 360) */
 #if defined(CYW20819A1) || defined(CYW20820A1)
-    { 1056,      7 },      /* Large Buffer Pool  (used for HCI ACL messages) */
+    { 1056,      5 },      /* Large Buffer Pool  (used for HCI ACL messages) */
 #else
     { 1056,      15 },      /* Large Buffer Pool  (used for HCI ACL messages) */
 #endif
