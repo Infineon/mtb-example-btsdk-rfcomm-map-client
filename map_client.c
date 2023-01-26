@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2022, Cypress Semiconductor Corporation (an Infineon company) or
+ * Copyright 2016-2023, Cypress Semiconductor Corporation (an Infineon company) or
  * an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
  *
  * This software, including source code, documentation and related
@@ -258,7 +258,7 @@ APPLICATION_START( )
     // Set to PUART to see traces on peripheral uart(puart)
     wiced_set_debug_uart(WICED_ROUTE_DEBUG_TO_PUART);
     //wiced_set_debug_uart(WICED_ROUTE_DEBUG_TO_WICED_UART);
-#if ( defined(CYW20706A2) || defined(CYW20735B0) || defined(CYW20719B0) || defined(CYW43012C0) )
+#if ( defined(CYW20706A2) || defined(CYW43012C0) )
     wiced_hal_puart_select_uart_pads(WICED_PUART_RXD, WICED_PUART_TXD, 0, 0);
 #endif
 #ifndef CYW20706A2
