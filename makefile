@@ -1,5 +1,5 @@
 #
-# Copyright 2016-2023, Cypress Semiconductor Corporation (an Infineon company) or
+# Copyright 2016-2024, Cypress Semiconductor Corporation (an Infineon company) or
 # an affiliate of Cypress Semiconductor Corporation.  All rights reserved.
 #
 # This software, including source code, documentation and related
@@ -91,6 +91,12 @@ endif
 CY_APP_DEFINES+=\
   -DWICED_BT_TRACE_ENABLE \
   -DOBEX_LIB_SESSION_SUPPORTED
+
+# For devices that are memory constrained and can process CY_DISABLE_TRACE_PATH
+# in the device CSP library in make/recipe/defines.mk:
+# list paths with source files we would like to build without WICED_BT_TRACE_ENABLE.
+CY_DISABLE_TRACE_PATH+=$(SEARCH_btsdk-common)
+CY_DISABLE_TRACE_PATH+=$(SEARCH_43012C0)
 
 ifneq ($(TARGET),$(filter $(TARGET),CYW920706WCDEVAL))
 CY_APP_DEFINES += -DBTA_MAP_1_2_SUPPORTED=TRUE
